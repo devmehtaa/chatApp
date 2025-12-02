@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <style>
+    /* General body */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background-color: #ece5dd;
+    }
+
+    h1 {
+      background-color: #075E54;
+      color: white;
+      margin: 0;
+      padding: 15px;
+      text-align: center;
+      font-size: 24px;
+    }
+
+    /* Chat area */
+    #chatSpace {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Chat bubbles */
+    .message {
+      max-width: 70%;
+      padding: 8px 12px;
+      margin: 5px 0;
+      border-radius: 10px;
+      word-wrap: break-word;
+    }
+
+    .message.you {
+      align-self: flex-end;
+      background-color: #dcf8c6;
+    }
+
+    .message.other {
+      align-self: flex-start;
+      background-color: #ffffff;
+    }
+
+    /* Form at bottom */
+    #chatForm {
+      display: flex;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-top: 1px solid #ccc;
+    }
+
+    #message {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    #chatForm button {
+      background-color: #25d366;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      margin-left: 10px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    #chatForm button:hover {
+      background-color: #128c7e;
+    }
+  </style>
+</head>
+<body>
+  <h1>Chat App</h1>
+
+  <div id="chatSpace"></div>
+
+  <form id="chatForm">
+    <input type="text" id="message" placeholder="Type a message" autocomplete="off">
+    <button type="submit">➤</button>
+  </form>
+<body>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    //websocket
+    const socket = io();
+    socket.on("connect", () => {
+        console.log("connected");
+    });
+
+    let username = prompt("Name?");
+
+    socket.on("history", (data) => {
+        for(let msg of data){
+            const chatSpace = document.getElementById("chatSpace")
+            chatSpace.innerHTML += `<div class="message other"><p>${msg.name}: ${msg.text}</p></div>`;
+        }
+    });
+
+    const chatForm = document.getElementById("chatForm");
+    chatForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        // takes message and sends to server
+        const message = document.getElementById("message").value.trim();
+        if(!message) return;
+        
+        const chatSpace = document.getElementById("chatSpace")
+        chatSpace.innerHTML += `<div class="message you"><p>You: ${message}</p></div>`;
+        const messageBox = document.getElementById("message");
+        messageBox.value = "";
+
+        socket.emit("message", {name: username, text: message});
+
+    })
+
+    socket.on("message", (message) => {
+        const chatSpace = document.getElementById("chatSpace")
+        chatSpace.innerHTML += `<div class="message other"><p>${message.name}: ${message.text}</p></div>`;
+    });
+
+    
+</script>
+</body>
+</html>
