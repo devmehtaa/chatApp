@@ -30,7 +30,7 @@ io.on("connection", (socket) => {
     });
 });
 
-
-server.listen(8080, () =>{
+const port = process.env.PORT || 3000;
+server.listen(port, () =>{
     console.log("http://localhost:8080/");
 });
